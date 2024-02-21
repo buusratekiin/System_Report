@@ -1,0 +1,369 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<script
+  src="https://code.jquery.com/jquery-3.6.4.slim.js"
+  integrity="sha256-dWvV84T6BhzO4vG6gWhsWVKVoa4lVmLnpBOZh/CAHU4="
+  crossorigin="anonymous"></script>
+  <style>
+    #ajaxImage {
+        display: none;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 99;
+        background: rgba(255,255,255,0.8) url("{%  static 'assets/images/slider/ajax_loading.gif' %}")center no-repeat;
+    }
+    .file-upload {
+  background-color: #ffffff;
+  width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.file-upload-btn {
+  width: 100%;
+  margin: 0;
+  color: #fff;
+  background: #1FB264;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  border-bottom: 4px solid #15824B;
+  transition: all .2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.file-convert-btn {
+  width: 100%;
+  margin: 0;
+  color: #fff;
+  background: #2b28dc;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  border-bottom: 4px solid #4391ea;
+  transition: all .2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.file-upload-btn:hover {
+  background: #1AA059;
+  color: #ffffff;
+  transition: all .2s ease;
+  cursor: pointer;
+}
+
+.file-upload-btn:active {
+  border: 0;
+  transition: all .2s ease;
+}
+
+.file-upload-content {
+  display: none;
+  text-align: center;
+}
+
+.file-upload-input {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.image-upload-wrap {
+  margin-top: 20px;
+  border: 4px dashed #1FB264;
+  position: relative;
+}
+
+.image-dropping,
+.image-upload-wrap:hover {
+  background-color: #1FB264;
+  border: 4px dashed #ffffff;
+}
+
+.image-title-wrap {
+  padding: 0 15px 15px 15px;
+  color: #222;
+}
+
+.drag-text {
+  text-align: center;
+}
+
+.drag-text h3 {
+  font-weight: 100;
+  text-transform: uppercase;
+  color: #15824B;
+  padding: 60px 0;
+}
+
+.file-upload-image {
+  max-height: 200px;
+  max-width: 200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.file-convert-image {
+  max-height: 200px;
+  max-width: 200px;
+  margin: auto;
+  padding: 20px;
+  color: purple;
+}
+
+
+
+.remove-image {
+  width: 200px;
+  margin: 0;
+  color: #fff;
+  background: #cd4535;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  border-bottom: 4px solid #b02818;
+  transition: all .2s ease;
+  outline: none;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.remove-image:hover {
+  background: #c13b2a;
+  color: #ffffff;
+  transition: all .2s ease;
+  cursor: pointer;
+}
+
+.remove-image:active {
+  border: 0;
+  transition: all .2s ease;
+}
+</style>
+<script>
+  
+  function readURL(input) {
+  if (input.files && input.files[0]) {
+
+    var reader = new FileReader();
+
+    reader.onload = function(e) {
+      $('.image-upload-wrap').hide();
+
+      $('.file-upload-image').attr('src', e.target.result);
+      $('.file-upload-content').show();
+
+      $('.image-title').html(input.files[0].name);
+    };
+
+    reader.readAsDataURL(input.files[0]);
+
+  } else {
+    removeUpload();
+  }
+}
+
+function removeUpload() {
+  $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+  $('.file-upload-content').hide();
+  $('.image-upload-wrap').show();
+}
+$('.image-upload-wrap').bind('dragover', function () {
+    $('.image-upload-wrap').addClass('image-dropping');
+  });
+  $('.image-upload-wrap').bind('dragleave', function () {
+    $('.image-upload-wrap').removeClass('image-dropping');
+});
+</script>
+   
+
+
+  <!-- [ Main Content ] start -->
+  <div class="row">
+    <div id="ajaxImage"></div>
+
+    <div class="col-sm-12">
+      <body>
+        <div class="container mt-5">
+            
+            <form id="convert-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                   <!-- <label for="file">Select File:</label>
+                    <input type="file" name="file" id="file"   accept=".jpg,.jpeg,.png,.gif,.avif,.webp" class="form-control-file">
+                    
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+                --> 
+
+                <script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+              <div class="file-upload">
+                {% if message %}
+                <p id="ok-message"class="alert alert-success">{{ message }}</p>
+                   <button   id="convert"  type="button"  class="file-convert-btn">Convert</button>
+                   <br>
+               {% endif %}
+               {% if error %}
+                   <p id="error-message" class="alert alert-danger">{{ error }}</p>
+               {% endif %}
+                <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger( 'click' )">Add Image</button>
+      
+                <div class="image-upload-wrap">
+                  <br>
+                  <input class="file-upload-input" type='file'  name="file" id="file"  accept=".jpg,.jpeg,.png,.gif,.avif,.webp" onchange="readURL(this);" accept="image/*" />
+                  <div class="drag-text">
+                    <h3>Drag and drop a file or select add Image</h3>
+                  </div>
+                </div>
+                <div class="file-upload-content">
+                  <img class="file-upload-image" src="#" alt="your image" />
+                  <div class="image-title-wrap">
+                    <button type="button" onclick="removeUpload()" class="btn btn-danger">Remove <span class="image-title">Uploaded Image</span></button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+        </div>
+        <br>
+    </body>
+    <div class="row">
+      <div class="col-sm-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Origin</h5>
+            <p id="origin_size" class="card-text"></p>
+            <div  class="col d-flex justify-content-center" id="origin"  ></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="card">
+          <div class="card-body">
+          <h5 class="card-title">Webp</h5>
+            <p  id="webp_size" class="card-text"></p>
+            <div  class="col d-flex justify-content-center" id="webp"  ></div>
+          </div>
+          </div>
+        </div>
+    
+     
+      <div class="col-sm-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Avif</h5>
+          <p  id="avif_size" class="card-text"></p>
+          <div   class="col d-flex justify-content-center" id="avif"  ></div>
+        </div>
+      </div>
+     </div>
+      </div>
+    </div>
+  </div>
+
+
+  
+    
+ 
+         
+
+   
+  
+    <script>
+         const token = '{{csrf_token}}';
+       
+         document.getElementById("convert").addEventListener("click", function() {
+            console.log( window.location.host)
+               const file_name = '{{ file_name }}'
+                 $.ajax({
+                     headers: {"X-CSRFToken": token},
+                     dataType: "JSON",
+                     url:  "{% url 'convert'  %}",
+                     type: "POST",
+                     data: {'file_name':file_name,},
+                     beforeSend:function(){
+                      $("#ajaxImage").show();
+                      },
+                     success: function (response) {
+                      var origin_size = document.getElementById("origin_size")
+                      var divElement_origin = document.getElementById('origin');
+                      var protocol = window.location.protocol; 
+                      var host = window.location.host; 
+                      var imagePath = protocol + "//" + host + '/static/'+response['origin_file'];
+                      var imageElement = document.createElement("img"); 
+                      imageElement.src = imagePath;
+                      imageElement.style.maxWidth = "300px"; 
+                      imageElement.maxHeight = "450px";
+                      origin_size.innerHTML += "Size: " + response['origin_size']
+                    
+                      
+                      divElement_origin.appendChild(imageElement); 
+
+                      var avif_size = document.getElementById("avif_size")
+                      var divElement_avif = document.getElementById('avif');
+                      var protocol = window.location.protocol; 
+                      var host = window.location.host; 
+                      var imagePath = protocol + "//" + host + '/static/'+response['avif_file'];
+                      var imageElement = document.createElement("img"); 
+                      imageElement.src = imagePath;
+                      imageElement.style.maxWidth = "300px"; 
+                      imageElement.maxHeight = "450px";
+                      avif_size.innerHTML += "Size: " + response['avif_size'];
+                    
+                      
+                      divElement_avif.appendChild(imageElement); 
+
+                      var webp_size = document.getElementById("webp_size")
+                      var divElement_webp = document.getElementById('webp');
+                      var protocol = window.location.protocol; 
+                      var host = window.location.host; 
+                      var imagePath = protocol + "//" + host + '/static/'+response['webp_file'];
+                      var imageElement = document.createElement("img"); 
+                      imageElement.src = imagePath;
+                      imageElement.style.maxWidth = "300px"; 
+                      imageElement.maxHeight = "450px";
+                      webp_size.innerHTML += "Size: " + response['webp_size'];
+                      
+                      
+                      divElement_webp.appendChild(imageElement); 
+
+                      if( response['ok'] === "ok" ) {
+                           $("#ajaxImage").hide();
+                          
+                     }
+                     document.getElementById("convert-form").reset();
+                     var elem = document.getElementById('convert');
+                     elem.parentNode.removeChild(elem);
+                     var elem = document.getElementById('ok-message');
+                     elem.parentNode.removeChild(elem);
+                     var elem = document.getElementById('error-message');
+                     elem.parentNode.removeChild(elem);
+                                          
+           
+           
+
+              }});
+           
+             })
+
+            
+
+    </script>
+    
+  <!-- [ Main Content ] end -->
+
+
+{% endblock content %}

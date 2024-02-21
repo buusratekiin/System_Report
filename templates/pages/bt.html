@@ -1,0 +1,166 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Add DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <style>
+        #inputTable {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #inputTable th,
+        #inputTable td {
+            border: 1px solid #dddddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #inputTable th {
+            background-color: #f2f2f2;
+        }
+
+        #deleteColumn {
+            width: 80px; 
+        }
+
+        .delete-button {
+            display: block;
+            margin: 2px 0;
+        }
+    </style>
+
+    <!-- Add DataTables JS and jQuery -->
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+
+</head>
+
+<body>
+
+    <!-- [ Main Content ] start -->
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Input Page</h5>
+                </div>
+                <div class="card-block">
+                    <div class="row">
+                        <div class="col-sm-10 mb-4">
+                            <div class="form-group">
+                                <label for="abt">Input</label>
+                                <input type="text" class="form-control" id="abt" aria-describedby="emailHelp"
+                                    placeholder="Input">
+                            </div>
+                        </div>
+                        <div class="col-sm-2 mb-4">
+                            <button type="submit" class="btn btn-success" id="saveButton">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-bordered" id="inputTable">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Input</th>
+                <th>Date</th>
+                <th id="deleteColumn">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inputt in inputs %}
+            <tr>
+                <td>{{ inputt.user }}</td>
+                <td>{{ inputt.input_text }}</td>
+                <td>{{ inputt.datetime }}</td>
+                <td>
+                    <a href="#" class="btn btn-danger delete-button" data-input-id="{{ inputt.id }}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="col-sm-2 mb-4">
+        <button type="submit" class="btn btn-success" id="mailButton">Mail</button>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#inputTable').DataTable();
+        });
+    </script>
+
+</body>
+
+</html>
+
+  <!-- [ Main Content ] end -->
+
+  <script>
+       const token = '{{csrf_token}}';
+
+$(document).ready(function () {
+    $('#saveButton').click(function () {
+        $.ajax({
+            headers: {"X-CSRFToken": token},
+            type: 'POST',
+            url: '/bt/',
+            data: {'input_text': $("#abt").val()},
+            dataType: 'json',
+            success: function (response) {
+                if (response.status === 'success') {
+                    alert('Input saved successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('An error occurred while saving the input.');
+            }
+        });
+    });
+
+    $('.delete-button').click(function (e) {
+        e.preventDefault();
+        const inputId = $(this).data('input-id');
+
+        $.ajax({
+            headers: {"X-CSRFToken": token},
+            type: 'DELETE',
+            url: `/bt/${inputId}/`,
+            dataType: 'json',
+            success: function (response) {
+                if (response.status === 'success') {
+                    alert('Input deleted successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function () {
+                alert('An error occurred while deleting the input.');
+            }
+        });
+    });
+
+    $('#inputTable').DataTable();
+});
+  </script>
+
+
+ {% endblock content %}

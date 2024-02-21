@@ -1,0 +1,162 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<script
+  src="https://code.jquery.com/jquery-3.6.4.slim.js"
+  integrity="sha256-dWvV84T6BhzO4vG6gWhsWVKVoa4lVmLnpBOZh/CAHU4="
+  crossorigin="anonymous"></script>
+
+
+  <!-- [ Main Content ] start -->
+  <div class="row">
+    <div class="col-md-12 col-xl-6">
+      <div class="card daily-sales">
+        <div class="card-block">
+          <h6 class="mb-4">Success</h6>
+          <div class="row d-flex align-items-center">
+            <div class="col-9">
+              <h3 class="f-w-300 d-flex align-items-center m-b-0"><i
+
+                  class="feather icon-arrow-up text-c-green f-30 m-r-10"></i> <p style="font-size:2vw" id="success_job"></p>
+             </h3>
+            </div>
+
+           
+          </div>
+        
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12 col-xl-6">
+      <div class="card Monthly-sales">
+        <div class="card-block">
+          <h6 class="mb-4">Failed</h6>
+          <div class="row d-flex align-items-center">
+            <div class="col-9">
+              <h3 class="f-w-300 d-flex align-items-center  m-b-0"><i
+                  class="feather icon-arrow-down text-c-red f-30 m-r-10"></i><p style="font-size:2vw" id="failed_job"></p></h3>
+            </div>
+          </div>
+       
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-12">
+      <div class="card">
+        <div class="card-header">
+          <h5>Stress Request</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <form id="stress">
+                <div class="form-group">
+                  <label for="ip_Address">IP Adress</label>
+                  <input type="text" class="form-control" id="ip_Address_input" type="text" minlength="7" maxlength="15" size="15" pattern="^((\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$"
+                    aria-describedby="ipHelp" placeholder="xxx.xxx.xxx.xxx">
+                  <small id="ipHelp" class="form-text text-muted">GPU ADDRESS ONLY IPv4</small>
+                </div>
+                <div class="form-group">
+                  <label for="port_gpu">PORT</label>
+                  <input type="number" class="form-control" id="port_gpu_input"
+                    placeholder="8090">
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                  <label>Time</label>
+                  <input type="number" class="form-control" placeholder="30" id="time_input">
+                </div>
+              </form>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+      {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+          <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          {% endfor %}
+      </ul>
+      {% endif %}
+  <!-- [ Main Content ] end -->
+  <script>
+     console.log(window.location.origin)
+     async function stressStatus() {
+      const response = await fetch('/stress/status/');
+    
+      const status = await response.json();
+      return status;
+    }
+    function makeGetRequest(url, callback) {
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        let response = JSON.parse(xhr.responseText);
+        callback(response);
+      }
+    };
+    xhr.send();
+  }
+
+    function sendRequestEverySecond() {
+      setInterval(function() {
+        let url =window.location.origin+'/stress/status/'
+        makeGetRequest(url, function(response) {
+          document.getElementById('success_job').innerText= response.success;
+          document.getElementById('failed_job').innerText= response.fail;
+        });
+     
+      }, 1000);
+    }
+     sendRequestEverySecond();
+     function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+      }
+     const token = '{{csrf_token}}';
+     $("#stress").submit(function (e) {
+                 let ip = $('#ip_Address_input').val();
+                 let port = $('#port_gpu_input').val();
+                 let time = $('#time_input').val();
+                 console.log(time)
+                 $.ajax({
+                     headers: {"X-CSRFToken": token},
+                     dataType: "JSON",
+                     url: "{% url 'stress' %}",
+                     type: "POST",
+                     data: {'time':time,'ip':ip,'port':port},
+                     success: function (response) {
+                      console.log(response);
+                 
+                if( response['status'] == "success" ) {
+                  console.log(response);
+                 
+                  alert('It is Work!');
+                  
+                  location.reload();
+                }
+                else{
+                   alert('Check it! IP and PORT');
+                  
+                  location.reload();
+
+                    
+                }
+              },
+             error: function (response) {
+             console.log(response);
+             location.reload();
+           
+
+              }});
+              e.preventDefault();
+             })
+
+  </script>
+
+{% endblock content %}
