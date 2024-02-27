@@ -99,6 +99,14 @@
             <li class=""><a href="{% url 'login' %}" class="" target="_blank">Sign in</a></li>
           </ul>
         </li> -->
+        {% if request.user.is_authenticated %}
+          <li data-username="bt" class="nav-item {% if 'bt' in segment %}active{% endif %}">
+            <a href="{% url 'bt' %}" class="nav-link">
+              <span class="pcoded-micon"><i class="feather icon-link"></i></span>
+              <span class="pcoded-mtext">Send Report</span>
+            </a>
+          </li>
+        {% endif %}
         <li data-username="Profile Page" class="nav-item {% if 'profile' in segment %}active{% endif %}"><a href="{% url 'profile' %}" class="nav-link"><span
               class="pcoded-micon"><i class="feather icon-user"></i></span><span class="pcoded-mtext">Profile
               Page</span></a>

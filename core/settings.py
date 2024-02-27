@@ -155,7 +155,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+USE_TZ = True
+TIME_ZONE = 'Europe/Istanbul'
 
 USE_I18N = True
 
@@ -188,9 +189,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 Q_CLUSTER = {
     'workers': 8,
     'recycle': 100,
-    'timeout': 600,
+    'timeout': 60,
     'compress': True,
-    'retry': 5,
+    'retry': 120,
     'save_limit': 1000,
     'queue_limit': 1000,
     'cpu_affinity': 4,
@@ -206,7 +207,23 @@ Q_CLUSTER = {
         'unix_socket_path': None
     }
 }
-
+# Q_CLUSTER = { 
+#     'name' : 'mycluster' , 
+#     'workers' : 4 , 
+#     'recycle' : 500 , 
+#     'timeout' : 60 , 
+#     'retry' : 120 , 
+#     'compress' : True , 
+#     'save_limit' : 250 , 
+#     'queue_limit' : 50 , 
+#     'bulk' : 10 , 
+#     'cpu_affinity' : 1 , 
+#     'label' : 'Django Q' , 
+#     'redis' : { 
+#         'host' : '127.0.0.1' , 
+#         'port' : 6379 , 
+#          } 
+# }
 
 
 #from django_q.tasks import schedule

@@ -11,7 +11,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Add DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    
+   
     <style>
         #inputTable {
             border-collapse: collapse;
@@ -37,12 +38,17 @@
             display: block;
             margin: 2px 0;
         }
+
     </style>
 
+  
+    <!-- Add DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    
     <!-- Add DataTables JS and jQuery -->
     <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
-
+    
 </head>
 
 <body>
@@ -52,7 +58,7 @@
         <div class="col-sm-12">
             <div class="card">
                 <div class="card-header">
-                    <h5>Input Page</h5>
+                    <h5>Report Page</h5>
                 </div>
                 <div class="card-block">
                     <div class="row">
@@ -72,6 +78,7 @@
         </div>
     </div>
 
+    
     <table class="table table-bordered" id="inputTable">
         <thead>
             <tr>
@@ -79,6 +86,7 @@
                 <th>Input</th>
                 <th>Date</th>
                 <th id="deleteColumn">Action</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -90,16 +98,23 @@
                 <td>
                     <a href="#" class="btn btn-danger delete-button" data-input-id="{{ inputt.id }}">Delete</a>
                 </td>
+                <td>{% if inputt.send %}
+                    Gönderildi
+                  {% else %}
+                    Gönderilmedi
+                  {% endif %}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <div class="col-sm-2 mb-4">
-        <button type="submit" class="btn btn-success" id="mailButton">Mail</button>
-    </div>
+    <!-- <div class="col-sm-1 mb-4 ml-auto ">
+        <button type="submit" class="btn btn-success" id="mailButton">Send</button>
+    </div> -->
+   
+
 
     <script>
-        $(document).ready(function () {
+        jQuery(document).ready(function($){
             $('#inputTable').DataTable();
         });
     </script>
@@ -157,8 +172,39 @@ $(document).ready(function () {
             }
         });
     });
+    
+    $('#mailButton').click(function () {
+            let emailContent = '<ul>';
+            $('#inputTable tbody tr').each(function () {
+                //const user = $(this).find('td:nth-child(1)').text();
+                const inputText = $(this).find('td:nth-child(2)').text();
+                //const date = $(this).find('td:nth-child(3)').text();
+                
+               //emailContent += `<li>User: ${user}, Input: ${inputText}, Date: ${date}</li>`;
+               emailContent += `<li> ${inputText} </li>`;
+            });
+            emailContent += '</ul>';
 
-    $('#inputTable').DataTable();
+            $.ajax({
+                headers: { "X-CSRFToken": token },
+                type: 'POST',
+                url: '/bt/send-email/',
+                data: { 'content': emailContent },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.status === 'success') {
+                        alert('Email sent successfully!');
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while sending the email.');
+                }
+            });
+        });
+
+    
 });
   </script>
 

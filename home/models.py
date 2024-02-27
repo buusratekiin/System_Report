@@ -15,6 +15,5 @@ class WarnerResponse(models.Model):
 class Input(models.Model):
     input_text=models.CharField(max_length=200)
     user = models.CharField(max_length=200)
-    datetime = models.DateTimeField(default=lambda: datetime.datetime.now() + datetime.timedelta(hours=3))
-    #datetime = models.DateTimeField(auto_now_add=True)
+    datetime = models.DateTimeField( default=datetime.datetime.now)
     send = models.BooleanField(default=False)

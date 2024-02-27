@@ -29,6 +29,16 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.shortcuts import render
 from django.contrib.auth import get_user 
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from smtplib import SMTP
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+
+
 class SuperuserRequiredMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_superuser
@@ -103,31 +113,73 @@ class Bt(View):
        }
 
    def get(self,request):
-       five_days_ago = datetime.now() - timedelta(days=5)
+       five_days_ago = timezone.now() - timedelta(days=5)
        inputs_last_5_days = Input.objects.filter(datetime__gte=five_days_ago)
        self.context = {
         'inputs': inputs_last_5_days,
        }
            
        return render(request, "pages/bt.html", self.context)
+
+   @staticmethod
+   def send(request):
+        try:
+            subject = "VMD Sistem Haftalık Raporu "
+            #message = "sa"
+            #content = "Subject: {0}\n\n{1}".format(subject, message)
+            #content = "Subject: {0}\n\n".format(subject)
+            content2 = request.POST.get('content', '')
+
+            mail = smtplib.SMTP(host='posta.turksat.com.tr', port=587)
+
+            mail.ehlo()
+            mail.starttls()
+            mail.ehlo()
+            mail.login('vmyd-rapor', 'OQxRkZX0CgO9uwRRJosR')
+
+            html = """
+            <html>
+    <head>
+    </head>
+    <body style="font-family: Arial, sans-serif;background-color: #f0f0f0;">
+        <div style="max-width: 800px; margin: 20px auto;padding: 20px;background-color: #fff;border-radius: 10px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);" class="container">
+            <img style=" max-width: 20%;height: auto;border-radius: 5px;margin-bottom: 20px;" src="https://www.turksat.com.tr/sites/default/files/2020-04/turksat_logotip_cmyk-01.png" alt="Turksat Logo">
+            
+            <p >Sayın Yetkili;</p>
+            <p>Veri Merkezi Haftalık Raporu aşağıda listelenmiştir.</p>
+            
+            <div style="margin-top: 20px;color: black;line-height: 1.6;">
+                {0}
+            </div>
+            
+            <p>İyi çalışmalar dilerim.</p>
+            <p>Saygılarımla.</p>
+            
+            <div style="font-style: italic;"></div>
+             <div style="margin-top: 5px;color: black;font-weight: bold; font-size: 9px;">
+                <p>***SORUMLULUK REDDİ BEYANI: Bu rapor sadece bilgi amaçlıdır. Veri doğruluğu konusunda herhangi bir garanti verilmemektedir. Şirketimiz, rapordaki bilgilerin kullanılmasından kaynaklanan herhangi bir sorumluluğu kabul etmez. Lütfen raporu dikkatlice inceleyin ve gerektiğinde uzman bir danışmana başvurun.***</p>
+            </div>
+        </div>
+    </body>
+</html>
+            """.format(content2)
+
+            msg = MIMEMultipart()
+            msg.attach(MIMEText(html, 'html'))
+            msg['Subject'] = 'VMYD Sistem Haftalık Raporu '
+
+            mail.sendmail('vmyd-rapor@turksat.com.tr', 'busratekin73@gmail.com', msg.as_string())
+            print("Mail gönderildi")
+            five_days_ago = timezone.now() - timedelta(days=5)
+            Input.objects.filter(datetime__gte=five_days_ago).update(send=True)
+            mail.quit()
+            return JsonResponse({'status': 'success'})
+            
+        except Exception as e:
+            print("Hata oluştu!\n{0}".format(e))
+            return JsonResponse({'status': 'error', 'message': str(e)})
    
-   
-
-  #  def get(self, request):
-   #try:
-  #     end_date = timezone.now()
-       #start_date = end_date - timedelta(days=5)
-       #print(start_date)    end_date = timezone.now()
-  #        start_date = end_date - timedelta(days=5)
-   #except Exception as err:
-   #   print({}.format(err))
-  #        self.context = {
-  #            'inputs': Input.objects.filter(date__range=[start_date, end_date]),
-  #        }
-
-  #        return render(request, "pages/bt.html", self.context)
-
-
+  
 
    def post(self,request):
       if request.method == 'POST':
@@ -279,11 +331,6 @@ class Stress(SuperuserRequiredMixin,View):
 
    return JsonResponse({'success':success,'fail':fail}, safe=False)
   
-
-
-
-
-
      
      
   def ip_port_control(self,ip,port):

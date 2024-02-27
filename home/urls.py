@@ -5,9 +5,10 @@ from home.views import Warner,Index,Stress,Avif,Watermark, Bt
 from django.contrib.auth.decorators import login_required
 
 
+
 urlpatterns = [
   path('', login_required(Index.as_view()), name='index'),
-
+  
 
 
   # Warner & stress
@@ -22,6 +23,8 @@ urlpatterns = [
   #bt
   path('bt/',login_required(Bt.as_view()),name='bt'),
   path('bt/<int:input_id>/', login_required(Bt.as_view()), name='delete_input_view'),
+  path('bt/send-email/', Bt.send, name='sendemail'),
+  #path('send_email/', send_email_view, name='send_email'),
   #webp
   path('watermark/',login_required(Watermark.as_view()),name='watermark'),
   path('watermark_convert/',Watermark.waterconvert,name='watermark_convert'),
