@@ -20,12 +20,12 @@ def send_email_task():
             content2+="<li>"
             content2 += f" {input_item.input_text}"
 
-        mail = smtplib.SMTP(host='posta.turksat.com.tr', port=587)
+        mail = smtplib.SMTP(host='example.com.tr', port=587)
 
         mail.ehlo()
         mail.starttls()
         mail.ehlo()
-        mail.login('vmyd-rapor', 'OQxRkZX0CgO9uwRRJosR')
+        mail.login('exampel@gmail.com', 'password')
 
         html = """
             <html>
@@ -58,7 +58,7 @@ def send_email_task():
         msg.attach(MIMEText(html, 'html'))
         msg['Subject'] = 'VMYD Sistem Haftalık Raporu '
 
-        mail.sendmail('vmyd-rapor@turksat.com.tr', 'busratekin73@gmail.com', msg.as_string())
+        mail.sendmail('exampel@gmail.com', 'asd@gmail.com', msg.as_string())
         print("Mail gönderildi")
         five_days_ago = timezone.now() - timedelta(days=5)
         Input.objects.filter(datetime__gte=five_days_ago).update(send=True)
